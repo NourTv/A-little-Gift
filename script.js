@@ -70,7 +70,7 @@
     slide.querySelector('.slide-inner')?.scrollTo(0, 0);
 
     track.style.setProperty('--i', index);
-    document.body.style.setProperty('--glow', slide.dataset.glow || 'rgba(246,184,200,.25)');
+    document.body.style.setProperty('--glow', slide.dataset.glow || 'rgba(150,170,255,.25)');
 
     dots.forEach((d, k) => d.classList.toggle('on', k === index));
     fill.style.width = (total > 1 ? (index / (total - 1)) * 100 : 100) + '%';
@@ -128,6 +128,7 @@
   const sc = document.getElementById('stars');
   const sctx = sc.getContext('2d');
   let stars = [];
+  let feathers = [];
   function sizeStars() {
     sc.width = innerWidth; sc.height = innerHeight;
     const n = Math.min(160, Math.floor((sc.width * sc.height) / 9000));
@@ -135,6 +136,11 @@
       x: Math.random() * sc.width, y: Math.random() * sc.height,
       r: Math.random() * 1.4 + 0.3, p: Math.random() * Math.PI * 2,
       s: Math.random() * 0.015 + 0.004, v: Math.random() * 0.12 + 0.02,
+    }));
+    feathers = Array.from({ length: 9 }, () => ({
+      x: Math.random() * sc.width, y: Math.random() * sc.height,
+      z: Math.random() * 9 + 9, a: Math.random() * Math.PI * 2, va: (Math.random() - 0.5) * 0.006,
+      vy: Math.random() * 0.25 + 0.12, ph: Math.random() * Math.PI * 2, sw: Math.random() * 0.4 + 0.2,
     }));
   }
   function drawStars() {
@@ -147,6 +153,18 @@
       sctx.fillStyle = '#fff';
       sctx.beginPath(); sctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); sctx.fill();
     }
+    // slowly drifting feathers
+    for (const f of feathers) {
+      if (!reduceMotion) { f.ph += 0.01; f.y += f.vy; f.x += Math.sin(f.ph) * f.sw; f.a += f.va; }
+      if (f.y > sc.height + 30) { f.y = -30; f.x = Math.random() * sc.width; }
+      sctx.save();
+      sctx.translate(f.x, f.y); sctx.rotate(f.a + Math.sin(f.ph) * 0.5);
+      sctx.globalAlpha = 0.22; sctx.fillStyle = '#e6ebff'; sctx.strokeStyle = '#ffffff'; sctx.lineWidth = 0.8;
+      sctx.beginPath(); sctx.ellipse(0, 0, f.z * 0.26, f.z, 0, 0, Math.PI * 2); sctx.fill();
+      sctx.beginPath(); sctx.moveTo(0, -f.z * 1.1); sctx.lineTo(0, f.z * 1.1); sctx.stroke();
+      sctx.restore();
+    }
+    sctx.globalAlpha = 1;
     requestAnimationFrame(drawStars);
   }
   sizeStars(); drawStars();
@@ -159,7 +177,7 @@
   function burst() {
     if (reduceMotion) return;
     cc.width = innerWidth; cc.height = innerHeight;
-    const colors = ['#f6b8c8', '#ecc98b', '#ffffff', '#a08cff'];
+    const colors = ['#a9b8ff', '#e6ebff', '#ffffff', '#c9a8ff'];
     for (let k = 0; k < 160; k++) {
       bits.push({
         x: cc.width / 2 + (Math.random() - 0.5) * 120,
